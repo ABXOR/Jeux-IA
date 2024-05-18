@@ -28,7 +28,10 @@ int minimax(Item *game, int depth, int alpha, int beta, int maximizingPlayer);
 int getBestMove(Item *game);
 
 void printInstructions();
+
 void printSeparator();
+
 void printBoardNicely(const Item *game);
+
 
 #endif // PUISSANCE4_H

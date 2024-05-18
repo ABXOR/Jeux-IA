@@ -30,7 +30,7 @@ $(EXEC_CONSOLE): $(COMMON_OBJS) $(CONSOLE_OBJS)
 
 # Règle pour générer l'exécutable pour l'interface graphique
 $(EXEC_GUI): $(COMMON_OBJS) $(GUI_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ -lSDL2
+	$(CC) $(CFLAGS) -o $@ $^ -lSDL2 -lSDL2_ttf
 
 # Règle générique pour générer les fichiers objets
 %.o: %.c $(HEADERS)

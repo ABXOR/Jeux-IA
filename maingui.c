@@ -1,9 +1,12 @@
 #include "ig.h"
+
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
         return 1;
     }
+
+    initSDL_ttf();
 
     SDL_Window *window = SDL_CreateWindow("Puissance 4", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
@@ -20,6 +23,16 @@ int main() {
         return 1;
     }
 
+    TTF_Font *font = TTF_OpenFont("arial.ttf", 24); // Ensure you have a valid TTF file at the specified path
+    if (!font) {
+        printf("TTF_OpenFont Error: %s\n", TTF_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+
+    AI_Mode aiMode = showStartScreen(renderer, font);
     Item *game = initGame();
 
     int running = 1;
@@ -41,7 +54,14 @@ int main() {
                         printf("It's a draw!\n");
                         running = 0;
                     } else {
-                        int aiMove = getBestMove(game);
+                        int aiMove;
+                        if (aiMode == AI_MINIMAX) {
+                            aiMove = getBestMove(game);
+                            printf("L'IA (Minimax) joue en colonne %d\n", aiMove);
+                        } else {
+                            aiMove = getRandomMove(game);
+                            printf("L'IA (Aléatoire) joue en colonne %d\n", aiMove);
+                        }
                         insertToken(game, aiMove);
                         if (checkWin(game)) {
                             printf("AI wins!\n");
@@ -57,6 +77,8 @@ int main() {
     }
 
     freeItem(game);
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
