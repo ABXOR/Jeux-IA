@@ -1,98 +1,95 @@
-#include <stdio.h>
-//#include <malloc.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <math.h>
 #include "board.h"
+#include "puissance4.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-
-// Initialize a new Game for the nQueens problem: an empty board..
-Item *initGame()
-{
-  int i;
-  Item *node;
-
-	char *initial = (char*)malloc(MAX_BOARD*sizeof(char));
-	for (int i=0; i<MAX_BOARD; i++) initial[i] = 0;
-
-    node = nodeAlloc();
-	initBoard(node, initial);
-  
-  node->depth = 0;
-
-  return node;
-}
-
-// print a board
-void printBoard( Item *node )
-{
-  assert(node);
-	printf("\n");
-	for (int j=0; j<WH_BOARD; j++) if (j==0) printf(" ___"); else printf("____"); printf("\n");
-	for (int i = 0 ; i < MAX_BOARD ; i++) {
-    if (i%WH_BOARD == 0) printf("|");
-    if (node->board[i] == 0) printf("   |");
-    else printf("%2d |", node->board[i]);
-    if (((i+1)%WH_BOARD) == 0) {
-			printf("\n");
-			for (int j=0; j<WH_BOARD; j++) if (j==0) printf(" ___"); else printf("____"); printf("\n");
-		}
-  }
-	printf("\n");
-}
-
-
-// initialize node's state from a given board
-void initBoard(Item *node, char *board) {
-	assert( node );
-	
-	node->size = MAX_BOARD;
-    node->board = calloc(MAX_BOARD, sizeof(char));
-  
-	/* Copy board */
-    
-}
-
-// Return 0 if all queens are placed. Positive otherwise
-// ie: nb queens that still need to be placed.
-double evaluateBoard(Item *node) {
-  int nb = WH_BOARD;
-
-	// complete
-    
-  return nb;
-}
-
-// Test if position pos is valid with respect to node's state
-// nQueens -> not same row ; not same column ; not same diagonal
-int isValidPosition( Item *node, int pos )
-{
-	int ii = pos / WH_BOARD;
-	int jj = pos % WH_BOARD;
-
-  for (int i=0; i<WH_BOARD; i++) {
-  	for (int j=0; j<WH_BOARD; j++) {
-      		return 0;
-      }
+// Function to initialize the game
+Item *initGame() {
+    Item *game = (Item *)malloc(sizeof(Item));
+    if (game == NULL) {
+        perror("Failed to allocate memory for game");
+        exit(EXIT_FAILURE);
     }
-  
-  return 1;
+
+    game->size = ROWS * COLS;
+    game->board = (char *)malloc(game->size * sizeof(char));
+    if (game->board == NULL) {
+        perror("Failed to allocate memory for board");
+        free(game); // Free the allocated memory for game
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < game->size; i++) {
+        game->board[i] = '.';
+    }
+    game->blank = '.';
+    game->depth = 0;
+    game->parent = NULL;
+    game->prev = NULL;
+    game->next = NULL;
+
+    return game;
 }
 
-// Return a new item where a new queen is added at position pos if possible. NULL if not valid
-Item *getChildBoard( Item *node, int pos )
-{
-  Item *child_p = NULL;
-  
-  if ( isValidPosition(node, pos) ) {
-
-    /* allocate and init child node */
-
-		/* Make move */
-
-		/* link child to parent for backtrack */
-      
-  }
-
-  return child_p;
+// Function to initialize the board state
+void initBoard(Item *node) {
+    for (int i = 0; i < node->size; i++) {
+        node->board[i] = node->blank;
+    }
+    node->depth = 0;
 }
+
+// Function to get a child board state after a move
+Item *getChildBoard(Item *node, int pos) {
+    Item *child = (Item *)malloc(sizeof(Item));
+    if (child == NULL) {
+        perror("Failed to allocate memory for child board");
+        exit(EXIT_FAILURE);
+    }
+    child->size = node->size;
+    child->board = (char *)malloc(child->size * sizeof(char));
+    if (child->board == NULL) {
+        perror("Failed to allocate memory for board");
+        free(child); // Free the allocated memory for child
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < node->size; i++) {
+        child->board[i] = node->board[i];
+    }
+    child->blank = node->blank;
+    child->depth = node->depth + 1;
+    child->parent = node;
+    child->prev = NULL;
+    child->next = NULL;
+
+    insertToken(child, pos);
+    return child;
+}
+
+// Function to evaluate the current state of the board
+double evaluateBoard(Item *node) {
+    if (checkWin(node)) {
+        return (node->depth % 2 == 0) ? -1000 : 1000;
+    }
+    return 0;
+}
+
+// Function to print the current state of the board
+void printBoard(const Item *game) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            printf("%c ", game->board[i * COLS + j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+// // Function to free the memory allocated for an Item
+// void freeItem(Item *node) {
+//     if (node) {
+//         if (node->board) {
+//             free(node->board);
+//         }
+//         free(node);
+//     }
+// }

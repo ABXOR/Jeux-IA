@@ -4,323 +4,191 @@
 #include <assert.h>
 #include "list.h"
 
-/* Item Functions */
+/* Fonction pour allouer un nouvel élément de liste */
+Item *nodeAlloc() {
+    Item *node = (Item *)malloc(sizeof(Item));
+    assert(node);
 
-Item *nodeAlloc()
-{
-	Item *node;
+    node->board = NULL;
+    node->parent = NULL;
+    node->prev = NULL;
+    node->next = NULL;
+    node->f = node->g = node->h = 0.0;
 
-	node = (Item *)malloc(sizeof(Item));
-	assert(node);
-
-	node->board = NULL;
-	node->parent = NULL;
-	node->prev = NULL;
-	node->next = NULL;
-	node->f = node->g = node->h = (double)0.0;
-
-	return node;
+    return node;
 }
 
-void freeItem(Item *node)
-{
-	if (node && node->board)
-		free(node->board);
-	if (node)
-		free(node);
+/* Fonction pour libérer un élément de liste */
+void freeItem(Item *node) {
+    if (node) {
+        if (node->board) {
+            free(node->board);
+        }
+        free(node);
+    }
 }
 
-void initList(list_t *list_p)
-{
-	// if (list_p == NULL) list_p = malloc(sizeof(list_t));
-	assert(list_p);
+/* Fonction pour initialiser une liste chaînée */
+void initList(list_t *list_p) {
+    assert(list_p);
 
-	list_p->numElements = 0;
-	list_p->first = NULL;
-	list_p->last = NULL;
+    list_p->numElements = 0;
+    list_p->first = NULL;
+    list_p->last = NULL;
 }
 
-int listCount(list_t *list)
-{
-	return list->numElements;
+/* Fonction pour retourner le nombre d'éléments dans la liste */
+int listCount(const list_t *list) {
+    return list->numElements;
 }
 
-// return an item with corresponding board , or null
-Item *onList(list_t *list, char *board)
-{
-	Item *test = list->first;
-	while (test != NULL)
-	{
-		if (strcmp(test->board, board) == 0)
-		{
-			return test;
-		}
-		test = test->next;
-	}
-
-	return NULL;
+/* Fonction pour rechercher un élément dans la liste par le plateau */
+Item *onList(const list_t *list, const char *board) {
+    Item *test = list->first;
+    while (test != NULL) {
+        if (strcmp(test->board, board) == 0) {
+            return test;
+        }
+        test = test->next;
+    }
+    return NULL;
 }
 
-// return and remove first item
-Item *popFirst(list_t *list) //
-{
+/* Fonction pour retourner et supprimer le premier élément de la liste */
+Item *popFirst(list_t *list) {
+    if (list->numElements == 0) {
+        return NULL;
+    }
 
-	if (list->numElements == 0)
-	{
-		Item *item = NULL;
-		return item;
-	}
-	if (list->numElements == 1)
-	{
-		Item *test = list->first;
-		list->first = NULL;
-		list->last = NULL;
-		list->numElements -= 1;
-		return test;
-	}
+    Item *first = list->first;
+    list->first = first->next;
+    if (list->first) {
+        list->first->prev = NULL;
+    } else {
+        list->last = NULL;
+    }
 
-	Item *test = list->first;
-	list->first = list->first->next;
-	list->numElements -= 1;
-	return test;
+    list->numElements--;
+    return first;
 }
 
-// return and remove last item
-Item *popLast(list_t *list) //
-{
-	if (list->numElements == 0)
-	{
-		Item *item = NULL;
-		return item;
-	}
-	if (list->numElements == 1)
-	{
-		Item *test = list->last;
-		list->first = NULL;
-		list->last = NULL;
-		list->numElements -= 1;
-		return test;
-	}
-	Item *test = list->last;
-	list->last = list->first->prev;
-	list->numElements -= 1;
-	return test;
+/* Fonction pour retourner et supprimer le dernier élément de la liste */
+Item *popLast(list_t *list) {
+    if (list->numElements == 0) {
+        return NULL;
+    }
+
+    Item *last = list->last;
+    list->last = last->prev;
+    if (list->last) {
+        list->last->next = NULL;
+    } else {
+        list->first = NULL;
+    }
+
+    list->numElements--;
+    return last;
 }
 
-// remove a node from list
-void delList(list_t *list, Item *node)
-{
-	if (list == NULL || node == NULL)
-		return;
-	if (node == list->first)
-	{
-		list->first = node->next;
-		if (list->first != NULL)
-		{
-			list->first->prev = NULL;
-		}
-	}
-	else
-	{
-		node->prev->next = node->next;
-	}
-	if (node == list->last)
-	{
-		list->last = node->prev;
-		if (list->last != NULL)
-		{
-			list->last->next = NULL;
-		}
-	}
-	else
-	{
-		node->next->prev = node->prev;
-	}
-	list->numElements--;
-	free(node);
+/* Fonction pour supprimer un élément de la liste */
+void delList(list_t *list, Item *node) {
+    if (!list || !node)
+        return;
+
+    if (node->prev) {
+        node->prev->next = node->next;
+    } else {
+        list->first = node->next;
+    }
+
+    if (node->next) {
+        node->next->prev = node->prev;
+    } else {
+        list->last = node->prev;
+    }
+
+    list->numElements--;
+    freeItem(node);
 }
 
-// return and remove best item with minimal f value
-Item *popBest(list_t *list) // and remove the best board from the list.
-{
-	if (list == NULL || list->first == NULL)
-	{
-		Item *item = NULL;
-		return item;
-	}
-	Item *test = list->first;
-	Item *bestnode = NULL;
-	float bestF = list->first->f;
-	while (test != NULL)
-	{
-		if (test->f < bestF)
-		{
-			bestF = test->f;
-			bestnode = test;
-		}
-		test = test->next;
-	}
+/* Fonction pour retourner et supprimer le meilleur élément avec la valeur f minimale */
+Item *popBest(list_t *list) {
+    if (!list || !list->first) {
+        return NULL;
+    }
 
-	if (bestnode->prev != NULL)
-		bestnode->prev->next = bestnode->next;
-	else
-		list->first = bestnode->next;
+    Item *bestnode = list->first;
+    Item *current = list->first->next;
 
-	if (bestnode->next != NULL)
-		bestnode->next->prev = bestnode->prev;
-	else
-		list->last = bestnode->prev;
+    while (current != NULL) {
+        if (current->f < bestnode->f) {
+            bestnode = current;
+        }
+        current = current->next;
+    }
 
-	list->numElements--;
-
-	return bestnode;
+    delList(list, bestnode);
+    return bestnode;
 }
 
-// add item in top
-void addFirst(list_t *list, Item *node) // add in head
-{
-	if (list->numElements == 0 || list->first == NULL)
-	{
-		list->first = node;
-		list->last = node;
-		list->numElements = 1;
-		node->prev = NULL;
-		node->next = NULL;
-	}
-	else
-	{
-		node->next = list->first;
-		node->prev = NULL;
-		list->first->prev = node;
-		list->first = node;
-		list->numElements += 1;
-	}
+/* Fonction pour ajouter un élément au début de la liste */
+void addFirst(list_t *list, Item *node) {
+    if (list->numElements == 0) {
+        list->first = node;
+        list->last = node;
+        node->prev = NULL;
+        node->next = NULL;
+    } else {
+        node->next = list->first;
+        node->prev = NULL;
+        list->first->prev = node;
+        list->first = node;
+    }
+    list->numElements++;
 }
 
-// add item in queue
-void addLast(list_t *list, Item *node) // add in tail
-{
-	if (list == NULL || node == NULL)
-		return;
+/* Fonction pour ajouter un élément à la fin de la liste */
+void addLast(list_t *list, Item *node) {
+    if (!list || !node)
+        return;
 
-	if (list->first == NULL && list->last == NULL)
-	{
-		list->first = node;
-		list->last = node;
-		node->next = NULL;
-		node->prev = NULL;
-		list->numElements++;
-	}
-	else
-	{
-		node->next = list->first;
-		node->prev = NULL;
-		list->first->prev = node;
-		list->first = node;
-		list->numElements++;
-	}
-}
-void cleanupList(list_t *list)
-{
-	if (list == NULL)
-		return;
-
-	Item *test = list->first;
-	while (test != NULL)
-	{
-		Item *temp = test;
-		test = test->next;
-
-		free(temp);
-	}
-
-	list->first = NULL;
-	list->last = NULL;
-	list->numElements = 0;
+    if (list->numElements == 0) {
+        list->first = node;
+        list->last = node;
+        node->next = NULL;
+        node->prev = NULL;
+    } else {
+        node->next = list->first;
+        node->prev = NULL;
+        list->first->prev = node;
+        list->first = node;
+    }
+    list->numElements++;
 }
 
-void printList(list_t list)
-{
-	Item *item = list.first;
-	while (item)
-	{
-		printf("%.2f [%s] - ", item->f, item->board);
-		item = item->next;
-	}
-	printf(" (nb_items: %d)\n", list.numElements);
+/* Fonction pour vider la liste et libérer les éléments */
+void cleanupList(list_t *list) {
+    if (!list)
+        return;
+
+    Item *current = list->first;
+    while (current != NULL) {
+        Item *next = current->next;
+        freeItem(current);
+        current = next;
+    }
+
+    list->first = NULL;
+    list->last = NULL;
+    list->numElements = 0;
 }
 
-// TEST LIST
-/*
-int main()
-{
-	Item *item;
-	char str[3];
-
-	list_t openList;
-
-	initList(&openList);
-
-	for (int i = 0; i < 10; i++)
-	{
-		item = nodeAlloc();
-		item->f = i;
-		sprintf(str, "%2d", i);
-		item->board = strdup(str);
-		addLast(&openList, item);
-	}
-
-	for (int i = 20; i < 25; i++)
-	{
-		item = nodeAlloc();
-		item->f = i;
-		sprintf(str, "%2d", i);
-		item->board = strdup(str);
-		addFirst(&openList, item);
-	}
-	printf("Liste 1 de Base #1\n");
-	printList(openList);
-	printf("\n");
-
-	Item *node = popBest(&openList);
-	printf("best node = %.2f\n", node->f);
-	printf("Liste pour ressortir le node avec le Best f\n");
-	printList(openList);
-	printf("\n");
-
-	strcpy(str, "23");
-	node = onList(&openList, str);
-	if (node)
-		printf("found %s: %.2f!\n", str, node->f);
-	printf("");
-	printList(openList);
-	printf("\n");
-
-	node = popFirst(&openList);
-
-	item = nodeAlloc();
-	item->f = 50;
-	sprintf(str, "50");
-	item->board = strdup(str);
-	addLast(&openList, item);
-
-	node = popFirst(&openList);
-	if (node)
-		printf("first: %.2f\n", node->f);
-	printList(openList);
-	printf("\n");
-
-	node = popLast(&openList);
-	if (node)
-		printf("last: %.2f\n", node->f);
-	printList(openList);
-	printf("\n");
-
-	printf("clean\n");
-	cleanupList(&openList);
-	printList(openList);
-	printf("\n");
-
-	return 0;
+/* Fonction pour afficher le contenu de la liste */
+void printList(const list_t *list) {
+    Item *item = list->first;
+    while (item) {
+        printf("%.2f [%s] - ", item->f, item->board);
+        item = item->next;
+    }
+    printf(" (nb_items: %d)\n", list->numElements);
 }
-*/
