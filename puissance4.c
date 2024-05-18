@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+#include <time.h>
 
 // Function to insert a token into a column
 int insertToken(Item *game, int col) {
@@ -82,7 +83,7 @@ int evaluateBoardState(Item *game) {
     return 0;
 }
 
-// Minimax algorithm with alpha-beta pruning
+// Optimized Minimax algorithm with alpha-beta pruning
 int minimax(Item *game, int depth, int alpha, int beta, int maximizingPlayer) {
     int score = evaluateBoardState(game);
     if (abs(score) == 1000 || depth == 0) {
@@ -124,7 +125,7 @@ int minimax(Item *game, int depth, int alpha, int beta, int maximizingPlayer) {
     }
 }
 
-// Function to get the best move for the AI
+// Function to get the best move for the AI using Minimax
 int getBestMove(Item *game) {
     int bestMove = -1;
     int bestValue = INT_MIN;
@@ -142,6 +143,19 @@ int getBestMove(Item *game) {
     }
 
     return bestMove;
+}
+
+// Function to get a random valid move for the AI
+int getRandomMove(Item *game) {
+    int validMove = 0;
+    int col;
+
+    while (!validMove) {
+        col = rand() % COLS;
+        validMove = insertToken(game, col);
+    }
+
+    return col;
 }
 
 void printInstructions() {
@@ -168,6 +182,8 @@ void printBoardNicely(const Item *game) {
 }
 
 int main() {
+    srand(time(NULL)); // Initialize random number generator
+
     list_t openList_p;
     list_t closedList_p;
 
@@ -180,6 +196,13 @@ int main() {
     Item *initial_state = initGame();
     printBoardNicely(initial_state);
 
+    int aiMode;
+    printf("\n Choisissez le mode IA: 1 pour Minimax, 2 pour aléatoire: ");
+    while (scanf("%d", &aiMode) != 1 || (aiMode != 1 && aiMode != 2)) {
+        printf("Choix invalide. Réessayez: ");
+        while (getchar() != '\n'); // clear the buffer
+    }
+
     while (1) {
         int col;
 
@@ -190,9 +213,14 @@ int main() {
                 while (getchar() != '\n'); // clear the buffer
             }
         } else {
-            col = getBestMove(initial_state);
-            printf("L'IA joue en colonne %d\n", col);
-            insertToken(initial_state, col);
+            if (aiMode == 1) {
+                col = getBestMove(initial_state);
+                printf("L'IA (Minimax) joue en colonne %d\n", col);
+                insertToken(initial_state, col);
+            } else {
+                col = getRandomMove(initial_state);
+                printf("L'IA (Aléatoire) joue en colonne %d\n", col);
+            }
         }
 
         printBoardNicely(initial_state);

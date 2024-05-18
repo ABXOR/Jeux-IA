@@ -14,6 +14,9 @@ int checkWin(const Item *game);
 // Function to evaluate the current state of the board for the AI
 int evaluateBoardState(Item *game);
 
+// Random algorithm
+int getRandomMove(Item *game);
+
 // Minimax algorithm with alpha-beta pruning
 int minimax(Item *game, int depth, int alpha, int beta, int maximizingPlayer);
 
