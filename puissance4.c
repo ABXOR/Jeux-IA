@@ -144,6 +144,29 @@ int getBestMove(Item *game) {
     return bestMove;
 }
 
+void printInstructions() {
+    printf("\nBienvenue dans le jeu Puissance 4 !\n");
+    printf("Le plateau de jeu est une grille de 6 lignes et 7 colonnes.\n");
+    printf("Vous jouez avec 'X' et l'IA joue avec 'O'.\n");
+    printf("Pour jouer, entrez un numéro de colonne entre 0 et 6.\n");
+    printf("Essayez d'aligner 4 jetons horizontalement, verticalement ou en diagonale pour gagner.\n");
+    printf("Bonne chance !\n\n");
+}
+
+void printSeparator() {
+    printf("+---+---+---+---+---+---+---+\n");
+}
+
+void printBoardNicely(const Item *game) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            printf("| %c ", game->board[i * COLS + j]);
+        }
+        printf("|\n");
+        printSeparator();
+    }
+}
+
 int main() {
     list_t openList_p;
     list_t closedList_p;
@@ -151,40 +174,36 @@ int main() {
     initList(&openList_p);
     initList(&closedList_p);
 
-    printf("\nInitial:");
+    printInstructions();
+    printSeparator();
+
     Item *initial_state = initGame();
-    printBoard(initial_state);
+    printBoardNicely(initial_state);
 
-    printf("\nSearching ...\n");
-    addLast(&openList_p, initial_state);
-
-    // Game loop
     while (1) {
-        printBoard(initial_state);
-
         int col;
+
         if (initial_state->depth % 2 == 0) {
-            printf("Enter your move (0-6): ");
-            scanf("%d", &col);
+            printf("Votre tour (0-6) : ");
+            while (scanf("%d", &col) != 1 || col < 0 || col >= COLS || !insertToken(initial_state, col)) {
+                printf("Mouvement invalide. Réessayez (0-6) : ");
+                while (getchar() != '\n'); // clear the buffer
+            }
         } else {
             col = getBestMove(initial_state);
-            printf("AI chooses column %d\n", col);
+            printf("L'IA joue en colonne %d\n", col);
+            insertToken(initial_state, col);
         }
 
-        if (!insertToken(initial_state, col)) {
-            printf("Invalid move. Try again.\n");
-            continue;
-        }
+        printBoardNicely(initial_state);
 
         if (checkWin(initial_state)) {
-            printBoard(initial_state);
-            printf("Player %d wins!\n", (initial_state->depth % 2 == 0) ? 2 : 1);
+            printf("Le joueur %d gagne !\n", (initial_state->depth % 2 == 0) ? 2 : 1);
             break;
         }
 
         if (initial_state->depth == ROWS * COLS) {
-            printBoard(initial_state);
-            printf("It's a draw!\n");
+            printf("Match nul !\n");
             break;
         }
     }
