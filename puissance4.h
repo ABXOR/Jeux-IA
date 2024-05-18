@@ -1,8 +1,12 @@
 #ifndef PUISSANCE4_H
 #define PUISSANCE4_H
-
-#include "item.h"
 #include "board.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#include <time.h>
+#include "item.h"
+
 
 
 // Function to insert a token into a column
@@ -22,5 +26,9 @@ int minimax(Item *game, int depth, int alpha, int beta, int maximizingPlayer);
 
 // Function to get the best move for the AI
 int getBestMove(Item *game);
+
+void printInstructions();
+void printSeparator();
+void printBoardNicely(const Item *game);
 
 #endif // PUISSANCE4_H
