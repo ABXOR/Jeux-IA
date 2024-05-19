@@ -2,6 +2,10 @@
 #define LIST_H
 
 #include "item.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 // Structure représentant une liste chaînée
 typedef struct {

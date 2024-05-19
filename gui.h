@@ -3,9 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "board.h"
 #include "puissance4.h"
-#include "list.h" // Ajout de cette ligne
 
 // Dimensions de la fenêtre
 extern const int SCREEN_WIDTH;
@@ -31,7 +29,7 @@ void drawCircle(SDL_Renderer *renderer, int x, int y, int radius);
 void renderText(const char* message, int x, int y, SDL_Color color);
 
 // Boucle de jeu et gestion des mouvements
-void handlePlayerMove(Item *game, int col);
+int handlePlayerMove(Item *game, int col);
 void gameLoop(Item *game, int isAI, int aiMode);
 
 // Affichage des menus

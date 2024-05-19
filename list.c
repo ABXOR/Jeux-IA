@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 #include "list.h"
 
 /* Fonction pour allouer un nouvel élément de liste */

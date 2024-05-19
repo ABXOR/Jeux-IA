@@ -20,7 +20,7 @@ int evaluateBoardState(Item *game);
 
 int getAStarMove(Item *game);
 
-int getTitiMove(Item *game) ;
+int getDfsMove(Item *game) ;
 // Random algorithm
 int getRandomMove(Item *game);
 

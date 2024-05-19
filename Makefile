@@ -11,7 +11,7 @@ COMMON_SRCS = board.c list.c puissance4.c
 
 # Fichiers sources spécifiques
 CONSOLE_SRCS = mainconsole.c
-GUI_SRCS = mainguiv2.c gui.c
+GUI_SRCS = maingui.c gui.c
 
 # Fichiers objets générés
 COMMON_OBJS = $(COMMON_SRCS:.c=.o)

@@ -1,7 +1,5 @@
 #include "board.h"
-#include "puissance4.h"
-#include <stdlib.h>
-#include <stdio.h>
+
 
 // Function to initialize the game
 Item *initGame() {

@@ -1,8 +1,4 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include "board.h"
-#include "puissance4.h"
-#include "list.h" // Ajout de cette ligne
+#include "gui.h"
 
 // Dimensions de la fenêtre
 const int SCREEN_WIDTH = 700;
@@ -125,9 +121,40 @@ void showWinnerMessage(const char* message) {
     SDL_Color textColor = {0, 0, 0, 255}; // Noir
     renderText(message, SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 50, textColor);
 
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Recommencer", textColor);
+    SDL_Rect restartButton = {SCREEN_WIDTH / 2 - textSurface->w / 2, SCREEN_HEIGHT / 2 + 20, textSurface->w + 20, textSurface->h + 10};
+    SDL_FreeSurface(textSurface);
+
+    // Draw button with border
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black border
+    SDL_RenderDrawRect(renderer, &restartButton);
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green fill
+    SDL_Rect innerButton = {restartButton.x + 2, restartButton.y + 2, restartButton.w - 4, restartButton.h - 4};
+    SDL_RenderFillRect(renderer, &innerButton);
+    
+    renderText("Recommencer", restartButton.x + 10, restartButton.y + 5, textColor);
+
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(5000); // Afficher le message pendant 5 secondes
+    int quit = 0;
+    SDL_Event e;
+    while (!quit) {
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) {
+                quit = 1;
+                closeSDL();
+                exit(0);
+            } else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
+                int x = e.button.x;
+                int y = e.button.y;
+                if (x >= restartButton.x && x <= restartButton.x + restartButton.w &&
+                    y >= restartButton.y && y <= restartButton.y + restartButton.h) {
+                    quit = 1;
+                    showMainMenu();
+                }
+            }
+        }
+    }
 }
 
 int handlePlayerMove(Item *game, int col) {
@@ -152,7 +179,7 @@ int aiMove(Item *game, int aiMode) {
     if (aiMode == 1) {
         col = getBestMove(game);
     } else {
-        col = getTitiMove(game);
+        col = getDfsMove(game);
     }
     insertToken(game, col);
     drawGrid(game);
@@ -292,5 +319,3 @@ void showMainMenu() {
         }
     }
 }
-
-

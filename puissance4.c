@@ -1,10 +1,4 @@
-#include "board.h"
 #include "puissance4.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
-#include <time.h>
-#include <stdbool.h>
 
 // Function to insert a token into a column
 int insertToken(Item *game, int col) {
@@ -147,89 +141,89 @@ int getBestMove(Item *game) {
 }
 
 // Heuristic function to evaluate the board state for the AI
-int heuristicScore(const Item *game, char playerToken) {
-    int score = 0;
+// int heuristicScore(const Item *game, char playerToken) {
+//     int score = 0;
 
-    // Check horizontal
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j <= COLS - 4; j++) {
-            int count = 0;
-            for (int k = 0; k < 4; k++) {
-                if (game->board[i * COLS + j + k] == playerToken) {
-                    count++;
-                }
-            }
-            score += count * count;
-        }
-    }
+//     // Check horizontal
+//     for (int i = 0; i < ROWS; i++) {
+//         for (int j = 0; j <= COLS - 4; j++) {
+//             int count = 0;
+//             for (int k = 0; k < 4; k++) {
+//                 if (game->board[i * COLS + j + k] == playerToken) {
+//                     count++;
+//                 }
+//             }
+//             score += count * count;
+//         }
+//     }
 
-    // Check vertical
-    for (int i = 0; i <= ROWS - 4; i++) {
-        for (int j = 0; j < COLS; j++) {
-            int count = 0;
-            for (int k = 0; k < 4; k++) {
-                if (game->board[(i + k) * COLS + j] == playerToken) {
-                    count++;
-                }
-            }
-            score += count * count;
-        }
-    }
+//     // Check vertical
+//     for (int i = 0; i <= ROWS - 4; i++) {
+//         for (int j = 0; j < COLS; j++) {
+//             int count = 0;
+//             for (int k = 0; k < 4; k++) {
+//                 if (game->board[(i + k) * COLS + j] == playerToken) {
+//                     count++;
+//                 }
+//             }
+//             score += count * count;
+//         }
+//     }
 
-    // Check diagonal (/)
-    for (int i = 0; i <= ROWS - 4; i++) {
-        for (int j = 0; j <= COLS - 4; j++) {
-            int count = 0;
-            for (int k = 0; k < 4; k++) {
-                if (game->board[(i + k) * COLS + j + k] == playerToken) {
-                    count++;
-                }
-            }
-            score += count * count;
-        }
-    }
+//     // Check diagonal (/)
+//     for (int i = 0; i <= ROWS - 4; i++) {
+//         for (int j = 0; j <= COLS - 4; j++) {
+//             int count = 0;
+//             for (int k = 0; k < 4; k++) {
+//                 if (game->board[(i + k) * COLS + j + k] == playerToken) {
+//                     count++;
+//                 }
+//             }
+//             score += count * count;
+//         }
+//     }
 
-    // Check diagonal (\)
-    for (int i = 0; i <= ROWS - 4; i++) {
-        for (int j = 3; j < COLS; j++) {
-            int count = 0;
-            for (int k = 0; k < 4; k++) {
-                if (game->board[(i + k) * COLS + j - k] == playerToken) {
-                    count++;
-                }
-            }
-            score += count * count;
-        }
-    }
+//     // Check diagonal (\)
+//     for (int i = 0; i <= ROWS - 4; i++) {
+//         for (int j = 3; j < COLS; j++) {
+//             int count = 0;
+//             for (int k = 0; k < 4; k++) {
+//                 if (game->board[(i + k) * COLS + j - k] == playerToken) {
+//                     count++;
+//                 }
+//             }
+//             score += count * count;
+//         }
+//     }
 
-    return score;
-}
+//     return score;
+// }
 
-// Function to get the best move for the AI using A* algorithm
-int getAStarMove(Item *game) {
-    int bestMove = -1;
-    int bestValue = INT_MIN;
+// // Function to get the best move for the AI using A* algorithm
+// int getAStarMove(Item *game) {
+//     int bestMove = -1;
+//     int bestValue = INT_MIN;
 
-    char aiToken = (game->depth % 2 == 0) ? 'X' : 'O';
-    char playerToken = (game->depth % 2 == 0) ? 'O' : 'X';
+//     char aiToken = (game->depth % 2 == 0) ? 'X' : 'O';
+//     char playerToken = (game->depth % 2 == 0) ? 'O' : 'X';
 
-    for (int col = 0; col < COLS; col++) {
-        Item *tempGame = getChildBoard(game, col);
-        if (insertToken(tempGame, col)) {
-            int moveValue = heuristicScore(tempGame, aiToken) - heuristicScore(tempGame, playerToken);
-            if (moveValue > bestValue) {
-                bestValue = moveValue;
-                bestMove = col;
-            }
-        }
-        freeItem(tempGame);
-    }
+//     for (int col = 0; col < COLS; col++) {
+//         Item *tempGame = getChildBoard(game, col);
+//         if (insertToken(tempGame, col)) {
+//             int moveValue = heuristicScore(tempGame, aiToken) - heuristicScore(tempGame, playerToken);
+//             if (moveValue > bestValue) {
+//                 bestValue = moveValue;
+//                 bestMove = col;
+//             }
+//         }
+//         freeItem(tempGame);
+//     }
 
-    return bestMove;
-}
+//     return bestMove;
+// }
 
 // Function to get the best move for the AI using "titi" algorithm
-int getTitiMove(Item *game) {
+int getDfsMove(Item *game) {
     char aiToken = (game->depth % 2 == 0) ? 'X' : 'O';
     char playerToken = (game->depth % 2 == 0) ? 'O' : 'X';
 

@@ -43,11 +43,11 @@ int main() {
                 if (aiMode == 2) {
                     col = getBestMove(initial_state);
                     printf("L'IA (Minimax) joue en colonne %d\n", col);
-                } else if (aiMode == 3) {
-                    col = getAStarMove(initial_state);
-                    printf("L'IA (A*) joue en colonne %d\n", col);
+                // } else if (aiMode == 3) {
+                //     col = getAStarMove(initial_state);
+                //     printf("L'IA (A*) joue en colonne %d\n", col);
                 } else if (aiMode == 1) {
-                    col = getTitiMove(initial_state);
+                    col = getDfsMove(initial_state);
                     printf("L'IA (Titi) joue en colonne %d\n", col);
                 }
                 insertToken(initial_state, col);
