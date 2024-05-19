@@ -48,7 +48,7 @@ int main() {
                 //     printf("L'IA (A*) joue en colonne %d\n", col);
                 } else if (aiMode == 1) {
                     col = getDfsMove(initial_state);
-                    printf("L'IA (Titi) joue en colonne %d\n", col);
+                    printf("L'IA (DFS) joue en colonne %d\n", col);
                 }
                 insertToken(initial_state, col);
             }
