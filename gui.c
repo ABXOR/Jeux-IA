@@ -125,7 +125,7 @@ void showWinnerMessage(const char* message) {
 
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(100); // Afficher le message pendant 5 secondes
+    SDL_Delay(5000); // Afficher le message pendant 5 secondes
 }
 
 int handlePlayerMove(Item *game, int col) {
@@ -288,4 +288,3 @@ void showMainMenu() {
             }
         }
     }
-}
