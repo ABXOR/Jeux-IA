@@ -107,6 +107,8 @@ void renderText(const char* message, int x, int y, SDL_Color color) {
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
     if (textTexture == NULL) {
         printf("Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError());
+        SDL_FreeSurface(textSurface);
+        return;
     }
 
     SDL_Rect renderQuad = { x, y, textSurface->w, textSurface->h };
@@ -150,7 +152,7 @@ int aiMove(Item *game, int aiMode) {
     if (aiMode == 1) {
         col = getBestMove(game);
     } else {
-        col = getRandomMove(game);
+        col = getTitiMove(game);
     }
     insertToken(game, col);
     drawGrid(game);
@@ -222,7 +224,7 @@ void showAIMenu() {
     SDL_RenderFillRect(renderer, &aiMinMax);
 
     SDL_Color textColor = {0, 0, 0, 255}; // Noir
-    renderText("IA Aleatoire", aiRandom.x + 75, aiRandom.y + 35, textColor);
+    renderText("IA DFS", aiRandom.x + 95, aiRandom.y + 35, textColor);
     renderText("IA MinMax", aiMinMax.x + 85, aiMinMax.y + 35, textColor);
 
     SDL_RenderPresent(renderer);
@@ -236,7 +238,7 @@ void showAIMenu() {
                 int y = e.button.y;
                 if (x >= 200 && x <= 500 && y >= 150 && y <= 250) {
                     Item *game = initGame();
-                    gameLoopPvAI(game, 0); // Mode IA Random
+                    gameLoopPvAI(game, 0); // Mode IA DFS
                     freeItem(game);
                     quit = 1;
                 } else if (x >= 200 && x <= 500 && y >= 300 && y <= 400) {
@@ -284,7 +286,11 @@ void showMainMenu() {
                     quit = 1;
                 } else if (x >= 200 && x <= 500 && y >= 300 && y <= 400) {
                     showAIMenu();
+                    quit = 1;
                 }
             }
         }
     }
+}
+
+

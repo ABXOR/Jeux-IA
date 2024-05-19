@@ -18,6 +18,9 @@ int checkWin(const Item *game);
 // Function to evaluate the current state of the board for the AI
 int evaluateBoardState(Item *game);
 
+int getAStarMove(Item *game);
+
+int getTitiMove(Item *game) ;
 // Random algorithm
 int getRandomMove(Item *game);
 

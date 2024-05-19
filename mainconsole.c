@@ -1,7 +1,6 @@
 #include "puissance4.h"
 
-int main()
-{
+int main() {
     srand(time(NULL)); // Initialize random number generator
 
     list_t openList_p;
@@ -18,69 +17,55 @@ int main()
 
     int gameMode;
     printf("\nChoisissez le mode de jeu: 1 pour IA, 2 pour deux joueurs: ");
-    while (scanf("%d", &gameMode) != 1 || (gameMode != 1 && gameMode != 2))
-    {
+    while (scanf("%d", &gameMode) != 1 || (gameMode != 1 && gameMode != 2)) {
         printf("Choix invalide. Réessayez: ");
-        while (getchar() != '\n')
-            ; // clear the buffer
+        while (getchar() != '\n'); // clear the buffer
     }
 
-    if (gameMode == 1)
-    {
+    if (gameMode == 1) {
         int aiMode;
-        printf("\n Choisissez le mode IA: 1 pour Minimax, 2 pour aléatoire: ");
-        while (scanf("%d", &aiMode) != 1 || (aiMode != 1 && aiMode != 2))
-        {
+        printf("\nChoisissez le mode IA: 1 pour Simple(DFS), 2 pour Extreme(minmax): ");
+        while (scanf("%d", &aiMode) != 1 || (aiMode < 1 || aiMode > 3)) {
             printf("Choix invalide. Réessayez: ");
-            while (getchar() != '\n')
-                ; // clear the buffer
+            while (getchar() != '\n'); // clear the buffer
         }
 
-        while (1)
-        {
+        while (1) {
             int col;
 
-            if (initial_state->depth % 2 == 0)
-            {
+            if (initial_state->depth % 2 == 0) {
                 printf("Votre tour (0-6) : ");
-                while (scanf("%d", &col) != 1 || col < 0 || col >= COLS || !insertToken(initial_state, col))
-                {
+                while (scanf("%d", &col) != 1 || col < 0 || col >= COLS || !insertToken(initial_state, col)) {
                     printf("Mouvement invalide. Réessayez (0-6) : ");
-                    while (getchar() != '\n')
-                        ; // clear the buffer
+                    while (getchar() != '\n'); // clear the buffer
                 }
-            }
-            else
-            {
-                if (aiMode == 1)
-                {
+            } else {
+                if (aiMode == 2) {
                     col = getBestMove(initial_state);
                     printf("L'IA (Minimax) joue en colonne %d\n", col);
-                    insertToken(initial_state, col);
+                } else if (aiMode == 3) {
+                    col = getAStarMove(initial_state);
+                    printf("L'IA (A*) joue en colonne %d\n", col);
+                } else if (aiMode == 1) {
+                    col = getTitiMove(initial_state);
+                    printf("L'IA (Titi) joue en colonne %d\n", col);
                 }
-                else
-                {
-                    col = getRandomMove(initial_state);
-                    printf("L'IA (Aléatoire) joue en colonne %d\n", col);
-                }
+                insertToken(initial_state, col);
             }
 
             printBoardNicely(initial_state);
 
-            if (checkWin(initial_state))
-            {
+            if (checkWin(initial_state)) {
                 printf("Le joueur %d gagne !\n", (initial_state->depth % 2 == 0) ? 2 : 1);
                 break;
             }
 
-            if (initial_state->depth == ROWS * COLS)
-            {
+            if (initial_state->depth == ROWS * COLS) {
                 printf("Match nul !\n");
                 break;
             }
         }
-    }else if (gameMode==2)
-    {
+    } else if (gameMode == 2) {
         while (1) {
             int col;
 
@@ -108,7 +93,6 @@ int main()
             }
         }
     }
-    
 
     cleanupList(&openList_p);
     cleanupList(&closedList_p);

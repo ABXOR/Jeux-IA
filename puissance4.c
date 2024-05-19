@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <time.h>
+#include <stdbool.h>
 
 // Function to insert a token into a column
 int insertToken(Item *game, int col) {
@@ -133,7 +134,7 @@ int getBestMove(Item *game) {
     for (int col = 0; col < COLS; col++) {
         Item *tempGame = getChildBoard(game, col);
         if (insertToken(tempGame, col)) {
-            int moveValue = minimax(tempGame, 5, INT_MIN, INT_MAX, 0);
+            int moveValue = minimax(tempGame, 8, INT_MIN, INT_MAX, 0);
             if (moveValue > bestValue) {
                 bestValue = moveValue;
                 bestMove = col;
@@ -145,18 +146,238 @@ int getBestMove(Item *game) {
     return bestMove;
 }
 
-// Function to get a random valid move for the AI
-int getRandomMove(Item *game) {
-    int validMove = 0;
-    int col;
+// Heuristic function to evaluate the board state for the AI
+int heuristicScore(const Item *game, char playerToken) {
+    int score = 0;
 
-    while (!validMove) {
-        col = rand() % COLS;
-        validMove = insertToken(game, col);
+    // Check horizontal
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j <= COLS - 4; j++) {
+            int count = 0;
+            for (int k = 0; k < 4; k++) {
+                if (game->board[i * COLS + j + k] == playerToken) {
+                    count++;
+                }
+            }
+            score += count * count;
+        }
     }
 
-    return col;
+    // Check vertical
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 0; j < COLS; j++) {
+            int count = 0;
+            for (int k = 0; k < 4; k++) {
+                if (game->board[(i + k) * COLS + j] == playerToken) {
+                    count++;
+                }
+            }
+            score += count * count;
+        }
+    }
+
+    // Check diagonal (/)
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 0; j <= COLS - 4; j++) {
+            int count = 0;
+            for (int k = 0; k < 4; k++) {
+                if (game->board[(i + k) * COLS + j + k] == playerToken) {
+                    count++;
+                }
+            }
+            score += count * count;
+        }
+    }
+
+    // Check diagonal (\)
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 3; j < COLS; j++) {
+            int count = 0;
+            for (int k = 0; k < 4; k++) {
+                if (game->board[(i + k) * COLS + j - k] == playerToken) {
+                    count++;
+                }
+            }
+            score += count * count;
+        }
+    }
+
+    return score;
 }
+
+// Function to get the best move for the AI using A* algorithm
+int getAStarMove(Item *game) {
+    int bestMove = -1;
+    int bestValue = INT_MIN;
+
+    char aiToken = (game->depth % 2 == 0) ? 'X' : 'O';
+    char playerToken = (game->depth % 2 == 0) ? 'O' : 'X';
+
+    for (int col = 0; col < COLS; col++) {
+        Item *tempGame = getChildBoard(game, col);
+        if (insertToken(tempGame, col)) {
+            int moveValue = heuristicScore(tempGame, aiToken) - heuristicScore(tempGame, playerToken);
+            if (moveValue > bestValue) {
+                bestValue = moveValue;
+                bestMove = col;
+            }
+        }
+        freeItem(tempGame);
+    }
+
+    return bestMove;
+}
+
+// Function to get the best move for the AI using "titi" algorithm
+int getTitiMove(Item *game) {
+    char aiToken = (game->depth % 2 == 0) ? 'X' : 'O';
+    char playerToken = (game->depth % 2 == 0) ? 'O' : 'X';
+
+    // Check horizontal for AI to win
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j <= COLS - 4; j++) {
+            if (game->board[i * COLS + j] == aiToken &&
+                game->board[i * COLS + j + 1] == aiToken &&
+                game->board[i * COLS + j + 2] == aiToken &&
+                game->board[i * COLS + j + 3] == game->blank) {
+                return j + 3;
+            }
+            if (game->board[i * COLS + j] == game->blank &&
+                game->board[i * COLS + j + 1] == aiToken &&
+                game->board[i * COLS + j + 2] == aiToken &&
+                game->board[i * COLS + j + 3] == aiToken) {
+                return j;
+            }
+        }
+    }
+
+    // Check vertical for AI to win
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (game->board[i * COLS + j] == aiToken &&
+                game->board[(i + 1) * COLS + j] == aiToken &&
+                game->board[(i + 2) * COLS + j] == aiToken &&
+                game->board[(i + 3) * COLS + j] == game->blank) {
+                return j;
+            }
+        }
+    }
+
+    // Check diagonal (/) for AI to win
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 0; j <= COLS - 4; j++) {
+            if (game->board[i * COLS + j] == aiToken &&
+                game->board[(i + 1) * COLS + j + 1] == aiToken &&
+                game->board[(i + 2) * COLS + j + 2] == aiToken &&
+                game->board[(i + 3) * COLS + j + 3] == game->blank) {
+                return j + 3;
+            }
+            if (game->board[i * COLS + j] == game->blank &&
+                game->board[(i + 1) * COLS + j + 1] == aiToken &&
+                game->board[(i + 2) * COLS + j + 2] == aiToken &&
+                game->board[(i + 3) * COLS + j + 3] == aiToken) {
+                return j;
+            }
+        }
+    }
+
+    // Check diagonal (\) for AI to win
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 3; j < COLS; j++) {
+            if (game->board[i * COLS + j] == aiToken &&
+                game->board[(i + 1) * COLS + j - 1] == aiToken &&
+                game->board[(i + 2) * COLS + j - 2] == aiToken &&
+                game->board[(i + 3) * COLS + j - 3] == game->blank) {
+                return j - 3;
+            }
+            if (game->board[i * COLS + j] == game->blank &&
+                game->board[(i + 1) * COLS + j - 1] == aiToken &&
+                game->board[(i + 2) * COLS + j - 2] == aiToken &&
+                game->board[(i + 3) * COLS + j - 3] == aiToken) {
+                return j;
+            }
+        }
+    }
+
+    // Check horizontal for player to block
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j <= COLS - 4; j++) {
+            if (game->board[i * COLS + j] == playerToken &&
+                game->board[i * COLS + j + 1] == playerToken &&
+                game->board[i * COLS + j + 2] == playerToken &&
+                game->board[i * COLS + j + 3] == game->blank) {
+                return j + 3;
+            }
+            if (game->board[i * COLS + j] == game->blank &&
+                game->board[i * COLS + j + 1] == playerToken &&
+                game->board[i * COLS + j + 2] == playerToken &&
+                game->board[i * COLS + j + 3] == playerToken) {
+                return j;
+            }
+        }
+    }
+
+    // Check vertical for player to block
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (game->board[i * COLS + j] == playerToken &&
+                game->board[(i + 1) * COLS + j] == playerToken &&
+                game->board[(i + 2) * COLS + j] == playerToken &&
+                game->board[(i + 3) * COLS + j] == game->blank) {
+                return j;
+            }
+        }
+    }
+
+    // Check diagonal (/) for player to block
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 0; j <= COLS - 4; j++) {
+            if (game->board[i * COLS + j] == playerToken &&
+                game->board[(i + 1) * COLS + j + 1] == playerToken &&
+                game->board[(i + 2) * COLS + j + 2] == playerToken &&
+                game->board[(i + 3) * COLS + j + 3] == game->blank) {
+                return j + 3;
+            }
+            if (game->board[i * COLS + j] == game->blank &&
+                game->board[(i + 1) * COLS + j + 1] == playerToken &&
+                game->board[(i + 2) * COLS + j + 2] == playerToken &&
+                game->board[(i + 3) * COLS + j + 3] == playerToken) {
+                return j;
+            }
+        }
+    }
+
+    // Check diagonal (\) for player to block
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 3; j < COLS; j++) {
+            if (game->board[i * COLS + j] == playerToken &&
+                game->board[(i + 1) * COLS + j - 1] == playerToken &&
+                game->board[(i + 2) * COLS + j - 2] == playerToken &&
+                game->board[(i + 3) * COLS + j - 3] == game->blank) {
+                return j - 3;
+            }
+            if (game->board[i * COLS + j] == game->blank &&
+                game->board[(i + 1) * COLS + j - 1] == playerToken &&
+                game->board[(i + 2) * COLS + j - 2] == playerToken &&
+                game->board[(i + 3) * COLS + j - 3] == playerToken) {
+                return j;
+            }
+        }
+    }
+
+    // If no move found, return the first available column
+    for (int col = 0; col < COLS; col++) {
+        for (int row = ROWS - 1; row >= 0; row--) {
+            if (game->board[row * COLS + col] == game->blank) {
+                return col;
+            }
+        }
+    }
+
+    // If no valid move is found, return -1 (should not happen in a typical game)
+    return -1;
+}
+
 
 void printInstructions() {
     printf("\nBienvenue dans le jeu Puissance 4 !\n");
@@ -180,4 +401,3 @@ void printBoardNicely(const Item *game) {
         printSeparator();
     }
 }
-
