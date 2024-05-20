@@ -174,7 +174,7 @@ int handlePlayerMove(Item *game, int col) {
 }
 
 int aiMove(Item *game, int aiMode) {
-    SDL_Delay(100); // Délai pour l'IA
+    SDL_Delay(300); // Délai pour l'IA
     int col;
     if (aiMode == 1) {
         col = getBestMove(game);
