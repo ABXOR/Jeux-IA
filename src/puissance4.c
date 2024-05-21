@@ -128,7 +128,7 @@ int getBestMove(Item *game) {
     for (int col = 0; col < COLS; col++) {
         Item *tempGame = getChildBoard(game, col);
         if (insertToken(tempGame, col)) {
-            int moveValue = minimax(tempGame, 8, INT_MIN, INT_MAX, 0);
+            int moveValue = minimax(tempGame, 9, INT_MIN, INT_MAX, 0);
             if (moveValue > bestValue) {
                 bestValue = moveValue;
                 bestMove = col;
